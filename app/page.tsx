@@ -1,4 +1,3 @@
-"use client";
 import Link from "next/link";
 import {
   Truck,
@@ -9,10 +8,16 @@ import {
 } from "lucide-react";
 import { ProductCard } from "@/components/ui/ProductCard";
 
-import { products } from "@/lib/data/products";
+import { supabase } from "@/lib/supabase";
+import { Product } from "@/lib/types";
 
 /* ─────────────────────────────────────────────────── */
-export default function HomePage() {
+export default async function HomePage() {
+  const { data: products } = await supabase
+    .from("products")
+    .select("*")
+    .limit(8);
+
   return (
     <div>
       {/* ══════════════════════════════════════
@@ -153,7 +158,7 @@ export default function HomePage() {
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             }}
           >
-            {products.map((p) => (
+            {products?.map((p: Product) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
@@ -284,7 +289,7 @@ export default function HomePage() {
               id="newsletter-email"
               type="email"
               placeholder="Email của bạn"
-              className="flex-1 outline-none transition-all"
+              className="flex-1 outline-none transition-all focus:outline-2 focus:outline-[#0071e3] focus:outline-offset-2"
               style={{
                 padding: "10px 16px",
                 borderRadius: "11px",
@@ -293,13 +298,6 @@ export default function HomePage() {
                 fontSize: "17px",
                 letterSpacing: "-0.374px",
                 color: "#1d1d1f",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.outline = "2px solid #0071e3";
-                e.currentTarget.style.outlineOffset = "2px";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.outline = "none";
               }}
             />
             <button

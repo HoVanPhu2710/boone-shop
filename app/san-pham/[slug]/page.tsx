@@ -1,52 +1,46 @@
-"use client";
-
-import { use, useState } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { ChevronRight, Shield, RefreshCw, Truck } from "lucide-react";
-import { getProductBySlug, getRelatedProducts } from "@/lib/data/products";
 import { ProductCard } from "@/components/ui/ProductCard";
-import { useCartStore } from "@/lib/store/useCartStore";
+import { AddToCartSection } from "@/components/san-pham/AddToCartSection";
+import { supabase } from "@/lib/supabase";
+import { Product } from "@/lib/types";
 
-import { toast } from "sonner";
+export const revalidate = 60; // revalidate every 60 seconds if not dynamic
 
 function formatVND(n: number) {
   return new Intl.NumberFormat("vi-VN").format(n) + " ₫";
 }
 
-export default function ProductDetailPage({ 
+export default async function ProductDetailPage({ 
   params 
 }: { 
   params: Promise<{ slug: string }> 
 }) {
-  const resolvedParams = use(params);
+  const resolvedParams = await params;
   const slug = resolvedParams.slug;
-  const product = getProductBySlug(slug);
+  
+  // Fetch product detail
+  const { data: productData } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single();
 
-  const { addItem } = useCartStore();
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const product = productData as Product | null;
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = getRelatedProducts(product.id, 4);
-
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      toast.error("Vui lòng chọn kích thước trước khi thêm vào giỏ hàng!");
-      return;
-    }
+  // Fetch related products (same category or recent)
+  const { data: relatedData } = await supabase
+    .from("products")
+    .select("*")
+    .neq("id", product.id)
+    .limit(4);
     
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      size: selectedSize
-    });
-    toast.success("Đã thêm vào giỏ hàng");
-  };
+  const relatedProducts = (relatedData as Product[]) || [];
 
   return (
     <div className="section-light min-h-screen pb-20">
@@ -77,7 +71,7 @@ export default function ProductDetailPage({
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
-                src={product.image} 
+                src={product.image_url} 
                 alt={product.name} 
                 className="w-full h-full object-cover"
               />
@@ -100,15 +94,15 @@ export default function ProductDetailPage({
               <span className="text-[24px] font-semibold text-[#1d1d1f] font-['SF_Pro_Display',sans-serif]">
                 {formatVND(product.price)}
               </span>
-              {product.originalPrice && (
+              {product.original_price && (
                 <span className="text-[17px] text-black/40 line-through font-['SF_Pro_Text',sans-serif]">
-                  {formatVND(product.originalPrice)}
+                  {formatVND(product.original_price)}
                 </span>
               )}
             </div>
 
             <p className="text-[17px] leading-relaxed text-black/70 mb-8 font-['SF_Pro_Text',sans-serif]">
-              {product.fullDescription || product.desc}
+              {product.full_description || product.description}
             </p>
 
             <div className="mb-8 p-5 bg-[#f5f5f7] rounded-xl border border-black/5">
@@ -116,43 +110,8 @@ export default function ProductDetailPage({
               <p className="text-[14px] text-black/70 font-['SF_Pro_Text',sans-serif]">{product.material || "100% Cotton cao cấp."}</p>
             </div>
 
-            {/* Size Selector */}
-            <div className="mb-8">
-              <div className="flex justify-between items-end mb-3">
-                <p className="text-[17px] font-semibold text-[#1d1d1f] font-['SF_Pro_Text',sans-serif]">Kích thước</p>
-                <Link href="#" className="text-[14px] text-[#0071e3] hover:underline font-['SF_Pro_Text',sans-serif]">
-                  Hướng dẫn chọn size
-                </Link>
-              </div>
-              <div className="grid grid-cols-5 gap-3">
-                {product.sizes.map((size) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`py-3 rounded-lg border font-medium text-[15px] transition-all font-['SF_Pro_Text',sans-serif] ${
-                      selectedSize === size
-                        ? "border-[#0071e3] bg-[#0071e3] text-white shadow-md"
-                        : "border-black/20 text-[#1d1d1f] hover:border-[#0071e3] bg-white"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-              {!selectedSize && (
-                <p className="text-[13px] text-[#ff3b30] mt-2 font-['SF_Pro_Text',sans-serif]">
-                  * Vui lòng chọn một kích thước.
-                </p>
-              )}
-            </div>
-
-            {/* CTA */}
-            <button 
-              onClick={handleAddToCart}
-              className="apple-btn-primary w-full py-4 text-[17px] font-semibold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
-            >
-              Thêm vào giỏ hàng
-            </button>
+            {/* Interactive Client Component for Add to Cart */}
+            <AddToCartSection product={product} />
 
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-black/10">

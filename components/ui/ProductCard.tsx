@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { useCartStore } from "@/lib/store/useCartStore";
 
-import { Product } from "@/lib/data/products";
+import { Product } from "@/lib/types";
 
 import { toast } from "sonner";
 
@@ -31,7 +31,7 @@ export function ProductCard({ product }: ProductCardProps) {
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.image,
+      image: product.image_url,
       size: selectedSize
     });
     toast.success("Đã thêm vào giỏ hàng");
@@ -45,7 +45,7 @@ export function ProductCard({ product }: ProductCardProps) {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={product.image}
+          src={product.image_url}
           alt={product.name}
           className="w-full h-full object-cover"
         />
@@ -73,9 +73,9 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.name}
         </h3>
         
-        {product.desc && (
+        {product.description && (
           <p className="apple-caption mb-2" style={{ color: "rgba(0,0,0,0.56)" }}>
-            {product.desc}
+            {product.description}
           </p>
         )}
 
@@ -103,9 +103,9 @@ export function ProductCard({ product }: ProductCardProps) {
           <span style={{ fontSize: "17px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.374px", fontFamily: '"SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>
             {formatVND(product.price)}
           </span>
-          {product.originalPrice && (
+          {product.original_price && (
             <span style={{ fontSize: "14px", color: "rgba(0,0,0,0.4)", textDecoration: "line-through", fontFamily: '"SF Pro Text", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>
-              {formatVND(product.originalPrice)}
+              {formatVND(product.original_price)}
             </span>
           )}
         </div>

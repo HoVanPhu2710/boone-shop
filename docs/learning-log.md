@@ -177,12 +177,45 @@ app/page.tsx, app/san-pham/page.tsx ← Xóa dữ liệu cứng, import từ fil
 
 ---
 
+---
+
+## 📅 Ngày 24/04/2025 — Buổi 6: Kết nối Supabase & Refactor Server Components
+
+### ✅ Đã làm
+- Kết nối **Supabase** bằng `@supabase/supabase-js`.
+- Tạo migration script (`supabase/seed.sql`) để tạo bảng `products` và thiết lập Row Level Security.
+- Seed dữ liệu 12 sản phẩm mẫu vào database bằng SQL.
+- Định nghĩa kiểu dữ liệu chuẩn (`lib/types.ts`) đồng bộ với schema của bảng.
+- **Refactor Server Components (tối ưu SEO & hiệu năng):**
+  - Chuyển `app/page.tsx` thành Server Component: Fetch trực tiếp dữ liệu top 8 sản phẩm từ database không cần dùng state hay API client-side. Thay thế sự kiện JS (`onFocus`, `onBlur`) bằng CSS thuần (`focus:outline`).
+  - Chuyển `app/san-pham/page.tsx` thành Server Component: Fetch toàn bộ danh sách, truyền dữ liệu qua component con (`ProductsPageClient.tsx`) để thực hiện các thao tác tìm kiếm và lọc phía Client.
+  - Chuyển `app/san-pham/[slug]/page.tsx` thành Server Component: Fetch chi tiết sản phẩm và các sản phẩm liên quan theo slug ở server. Bóc tách logic chọn Size và Add to Cart vào một component con `AddToCartSection.tsx` (dùng `"use client"`).
+- Xóa bỏ dữ liệu mock tĩnh (`lib/data/products.ts`).
+
+### 📁 Files thay đổi
+```
+lib/supabase.ts                        ← [MỚI] Supabase client singleton
+lib/types.ts                           ← [MỚI] Centralized database interface
+supabase/seed.sql                      ← [MỚI] Schema và Mock data
+components/san-pham/ProductsPageClient.tsx ← [MỚI] Logic filter (Client)
+components/san-pham/AddToCartSection.tsx   ← [MỚI] Logic Add to Cart (Client)
+app/page.tsx                           ← Server Component refactoring
+app/san-pham/page.tsx                  ← Server Component refactoring
+app/san-pham/[slug]/page.tsx           ← Server Component refactoring
+components/ui/ProductCard.tsx          ← Map data model Supabase (image_url, original_price, description)
+```
+
+### 🧠 Khái niệm học được
+| Khái niệm | Giải thích |
+|---|---|
+| `Server Components vs Client Components` | Server Components dùng để fetch dữ liệu tốt cho SEO và nhẹ client. Client Components (`"use client"`) dùng khi cần state, hooks, event listeners. |
+| `Supabase` | Backend-as-a-Service thay thế cho Firebase, dựa trên Postgres. |
+| `CSS Focus States` | Dùng các pseudo-class `:focus` trong Tailwind thay vì xử lý bằng event handler JS, tiết kiệm JavaScript payload. |
+
+---
+
 ## 🗓️ Kế hoạch tiếp theo (chưa làm)
 
-
-- [ ] **Routing** — Tạo trang `/products/[id]` cho từng sản phẩm
-- [ ] **State Management** — Giỏ hàng dùng React Context hoặc Zustand
-- [ ] **Supabase** — Kết nối database, lưu sản phẩm thật
 - [ ] **Auth** — Đăng nhập / đăng ký với Supabase Auth
 - [ ] **Stripe** — Tích hợp thanh toán
 - [ ] **API Routes** — Tạo backend endpoint với Next.js Route Handlers
@@ -190,4 +223,4 @@ app/page.tsx, app/san-pham/page.tsx ← Xóa dữ liệu cứng, import từ fil
 
 ---
 
-*Cập nhật lần cuối: 23/04/2025*
+*Cập nhật lần cuối: 24/04/2025*
